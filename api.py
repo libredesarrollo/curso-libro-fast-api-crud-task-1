@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, Query, Path
 
 from task import task_router
+from myupload import upload_router
 
 app = FastAPI()
 router = APIRouter()
@@ -39,3 +40,4 @@ def phone(phone: str = Path(regex=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\
 
 app.include_router(router)
 app.include_router(task_router, prefix='/tasks')
+app.include_router(upload_router, prefix='/upload')
