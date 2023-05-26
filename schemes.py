@@ -47,6 +47,7 @@ class Task(MyBaseModel):
     tags: set[str] = set()
 
     class Config:
+        orm_mode=True
         schema_extra = {
             "example": {
                 "id" : 123,

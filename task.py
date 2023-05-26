@@ -1,13 +1,19 @@
-from fastapi import APIRouter, Body, status, HTTPException
+from fastapi import APIRouter, Depends, Body, status, HTTPException
+from sqlalchemy.orm import Session
 
-from models import Task, StatusType
+from database.database import get_database_session
+from schemes import Task, StatusType
+from database import models
 
 task_router = APIRouter()
 task_list= [
 ]
-
+    
 @task_router.get("/",status_code=status.HTTP_200_OK)
-def get():
+def get(db: Session = Depends(get_database_session)):
+    # SELECT * FROM tasks WHERE id = 1
+    task = db.query(models.Task).filter(models.Task.id == 1).first()
+    print(task.status)
     return { "tasks": task_list }
 
 @task_router.post("/",status_code=status.HTTP_201_CREATED)
@@ -76,7 +82,7 @@ def add(task: Task = Body(
             }
         }
     }
-)):
+), db: Session = Depends(get_database_session)):
 
     #verifica que el indice exista
     if task in task_list:
@@ -106,7 +112,7 @@ def update(index: int, task: Task = Body(
                     "website":"http://desarrollolibre.net",
                 }
             }
-)):
+), db: Session = Depends(get_database_session)):
     # task_list[index] = {
     #     "task" : task.name,
     #     "status" : task.status,
@@ -122,7 +128,7 @@ def update(index: int, task: Task = Body(
     return { "tasks": task_list }
 
 @task_router.delete("/",status_code=status.HTTP_200_OK)
-def delete(index: int):
+def delete(index: int, db: Session = Depends(get_database_session)):
 
     #verifica que el indice exista
     if len(task_list) <= index:

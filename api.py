@@ -1,14 +1,21 @@
-from fastapi import FastAPI, APIRouter, Query, Path
+from fastapi import FastAPI, Depends, APIRouter, Query, Path
+from sqlalchemy.orm import Session
 
 from task import task_router
 from myupload import upload_router
 
+from database.database import Base, engine, get_database_session
+from database.models import Task
+
 app = FastAPI()
 router = APIRouter()
 
+Base.metadata.create_all(bind=engine)
+
 @router.get('/hello')
-def hello_world():
+def hello_world(db: Session = Depends(get_database_session)):
     return { "hello": "world" }
+
 
 
 @app.get("/e_page")
