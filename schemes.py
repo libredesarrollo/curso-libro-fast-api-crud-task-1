@@ -7,19 +7,20 @@ class StatusType(str,Enum):
     PENDING = "pending"
 
 class MyBaseModel(BaseModel):
-    id:int = Field(gt=1, le=10000)
+    pass
+    # id:int = Field(gt=1, le=10000)
 
-    @validator('id')
-    def id_greater_than_zero(cls, v):
-        if v<=0 :
-            raise ValueError('must be greater than zero')
-        return v
+    # @validator('id')
+    # def id_greater_than_zero(cls, v):
+    #     if v<=0 :
+    #         raise ValueError('must be greater than zero')
+    #     return v
     
-    @validator('id')
-    def id_less_than_thousand(cls, v):
-        if v >= 10000 :
-            raise ValueError('must be less than thousand')
-        return v
+    # @validator('id')
+    # def id_less_than_thousand(cls, v):
+    #     if v >= 10000 :
+    #         raise ValueError('must be less than thousand')
+    #     return v
 
 class Category(MyBaseModel):
     name: str
@@ -41,10 +42,14 @@ class Task(MyBaseModel):
     name: str
     description: Optional[str] = Field("No description",min_length=5)
     status: StatusType
-    category: Category
-    user: User
+    # category: Category
+    # user: User
     # tags: List[str] = []
-    tags: set[str] = set()
+
+    
+    category_id: int = Field(gt=0)
+    user_id: int = Field(gt=0)
+    # tags: set[str] = set()
 
     class Config:
         orm_mode=True

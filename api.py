@@ -17,7 +17,6 @@ def hello_world(db: Session = Depends(get_database_session)):
     return { "hello": "world" }
 
 
-
 @app.get("/e_page")
 def page(page: int = Query(1, ge=1, le=20, title='Esta es la pagina que quieres ver'), size: int = Query(5, ge=5, le=20, title='Cuantos registros por pagina')):
     return { "page": page,"size": size }
