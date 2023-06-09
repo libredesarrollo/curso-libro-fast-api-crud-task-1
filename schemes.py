@@ -6,23 +6,7 @@ class StatusType(str,Enum):
     DONE = "done"
     PENDING = "pending"
 
-class MyBaseModel(BaseModel):
-    pass
-    # id:int = Field(gt=1, le=10000)
-
-    # @validator('id')
-    # def id_greater_than_zero(cls, v):
-    #     if v<=0 :
-    #         raise ValueError('must be greater than zero')
-    #     return v
-    
-    # @validator('id')
-    # def id_less_than_thousand(cls, v):
-    #     if v >= 10000 :
-    #         raise ValueError('must be less than thousand')
-    #     return v
-
-class Category(MyBaseModel):
+class Category(BaseModel):
     name: str
     # class Config:
     #     schema_extra = {
@@ -32,13 +16,13 @@ class Category(MyBaseModel):
     #         }
     #     }
 
-class User(MyBaseModel):
+class User(BaseModel):
     name: str = Field(min_length=5)
     surname: str
     email: EmailStr
     website: str #HttpUrl
 
-class Task(MyBaseModel):
+class Task(BaseModel):
     name: str
     description: Optional[str] = Field("No description",min_length=5)
     status: StatusType
@@ -81,4 +65,9 @@ class Task(MyBaseModel):
         raise ValueError('must be a alphanumeric')
         
 
+class TaskRead(Task):
+    id: int
 
+class TaskWrite(Task):
+    id: Optional[int] = Field(default=None)
+    user_id: Optional[int] = Field()

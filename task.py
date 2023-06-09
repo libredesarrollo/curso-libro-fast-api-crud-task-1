@@ -1,17 +1,14 @@
-from fastapi import APIRouter, Depends, Body, status, HTTPException
+from fastapi import APIRouter, Depends, Body, Path, status
 from sqlalchemy.orm import Session
 
 from database.database import get_database_session
 from database.task import crud
-from database import models
 
-from schemes import Task, StatusType
+from schemes import Task, TaskRead, TaskWrite
 from dataexample import taskWithORM
 
 task_router = APIRouter()
-task_list= [
-]
-    
+
 @task_router.get("/",status_code=status.HTTP_200_OK)
 def get(db: Session = Depends(get_database_session)):
     # SELECT * FROM tasks WHERE id = 1
@@ -26,70 +23,29 @@ def get(db: Session = Depends(get_database_session)):
     # print(crud.pagination(1,2,db))
     
     return { "tasks": crud.getAll(db) }
+    # return { "tasks": [ TaskRead.from_orm(task) for task in crud.getAll(db) ] }
+
+@task_router.get("/{id}",status_code=status.HTTP_200_OK)
+def get(id: int = Path(ge=1), db: Session = Depends(get_database_session)):
+    return crud.getById(id, db)
+    # return Task.from_orm(crud.getById(id, db))
 
 @task_router.post("/",status_code=status.HTTP_201_CREATED)
-def add(task: Task = Body(
+def add(task: TaskWrite = Body(
     examples=taskWithORM
 ), db: Session = Depends(get_database_session)):
 
-    #verifica que el indice exista
-    # if task in task_list:
-    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-    #                         detail='Task '+ task.name+' already exist')
+    # return { "tasks": TaskWrite.from_orm(crud.create(task,db=db)) }
+    return { "tasks": crud.create(task,db=db) }
 
-    crud.create(task,db=db)
+@task_router.put("/{id}",status_code=status.HTTP_200_OK)
+def update(id: int = Path(ge=1), task: TaskWrite = Body(
+     examples=taskWithORM), db: Session = Depends(get_database_session)):
 
-    task_list.append(task)
-    return { "tasks": task_list }
+    return { "task": crud.update(id, task, db) }
 
-@task_router.put("/",status_code=status.HTTP_200_OK)
-def update(id: int, task: Task = Body(
-     example= {
-                "id" : 123,
-                "name": "Salvar al mundo 2",
-                "description": "Hola Mundo Desc",
-                "status": StatusType.PENDING,
-                "tag":["tag 1", "tag 2"],
-                "category": {
-                    "id":1234,
-                    "name":"Cate 1"
-                },
-                "user": {
-                    "id":12,
-                    "name":"Andres",
-                    "email":"admin@admin.com",
-                    "surname":"Cruz",
-                    "website":"http://desarrollolibre.net",
-                }
-            }
-), db: Session = Depends(get_database_session)):
-    # task_list[index] = {
-    #     "task" : task.name,
-    #     "status" : task.status,
-    #     "description" : task.description,
-    # }
-
-    #verifica que el indice exista
-    if len(task_list) <= index:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='Task ID does not exist')
-
-    task_list[index] = task
-
-    
-
-    return { "tasks": task_list }
-
-@task_router.delete("/",status_code=status.HTTP_200_OK)
-def delete(index: int, db: Session = Depends(get_database_session)):
-
-    crud.delete(1,db)
-
-    #verifica que el indice exista
-    if len(task_list) <= index:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='Task ID does not exist')
-
-    del task_list[index] 
-    return { "tasks": task_list }
+@task_router.delete("/{id}",status_code=status.HTTP_200_OK)
+def delete(id: int = Path(ge=1), db: Session = Depends(get_database_session)):
+    crud.delete(id,db)
+    return { "tasks": crud.getAll(db) }
 

@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.pagination import paginate, PageParams
@@ -11,6 +12,9 @@ def getAll(db: Session):
 def getById(id: int, db: Session):
     # task = db.query(models.Task).filter(models.Task.id == id).first()
     task = db.query(models.Task).get(id)
+    
+    if task is None:
+       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) 
     return task
 
 def create(task: Task, db: Session):
