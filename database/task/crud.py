@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from database.pagination import paginate, PageParams
 from database import models
@@ -11,6 +11,7 @@ def getAll(db: Session):
 
 def getById(id: int, db: Session):
     # task = db.query(models.Task).filter(models.Task.id == id).first()
+    # task = db.query(models.Task).options(load_only(models.Task.name, models.Task.status)).get(id)
     task = db.query(models.Task).get(id)
     
     if task is None:
@@ -51,3 +52,33 @@ def pagination(page: int, size:int, db: Session):
     # pageParams.page = page
     # pageParams.size = size
     return paginate(pageParams, db.query(models.Task), Task)
+
+
+#*********TAGS
+
+def getTagById(id:int, db: Session):
+    tag = db.query(models.Tag).get(id)
+    
+    if tag is None:
+       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) 
+    return tag
+
+def tagAdd(id:int, idTag:int, db: Session):
+    task = getById(id,db)
+    tag = getTagById(idTag,db)
+
+    tag.tasks.append(task)
+    db.add(tag)
+    db.commit()
+
+    return task
+
+def tagRemove(id:int, idTag:int, db: Session):
+    task = getById(id,db)
+    tag = getTagById(idTag,db)
+
+    task.tags.remove(tag)
+    db.add(task)
+    db.commit()
+
+    return task

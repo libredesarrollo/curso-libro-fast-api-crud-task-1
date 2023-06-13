@@ -49,3 +49,11 @@ def delete(id: int = Path(ge=1), db: Session = Depends(get_database_session)):
     crud.delete(id,db)
     return { "tasks": crud.getAll(db) }
 
+#******** tag
+@task_router.put("/tag/add/{id}",status_code=status.HTTP_200_OK)
+def tagAdd(id: int = Path(ge=1), idTag:int = Body(ge=1), db: Session = Depends(get_database_session)):
+    return crud.tagAdd(id,idTag,db)
+
+@task_router.delete("/tag/remove/{id}",status_code=status.HTTP_200_OK)
+def tagRemove(id: int = Path(ge=1), idTag:int = Body(ge=1), db: Session = Depends(get_database_session)):
+    return crud.tagRemove(id, idTag, db)
