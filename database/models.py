@@ -28,7 +28,8 @@ class Task(Base):
     category = relationship('Category', lazy='joined', back_populates='tasks')
     user = relationship('User', lazy='joined', back_populates='tasks')
 
-    tags = relationship('Tag', secondary=task_tag, backref='tasks')
+    tags = relationship('Tag', secondary=task_tag, back_populates='tasks')
+    # tags = relationship('Tag', secondary=task_tag, backref='tasks')
 
 class Category(Base):
     __tablename__ = "categories"
@@ -51,7 +52,7 @@ class Tag(Base):
     __tablename__ = "tags"
     id=Column(Integer, primary_key=True, index=True)
     name = Column(String(20))
-    # tasks = relationship('Task', secondary=task_tag)
+    tasks = relationship('Task', secondary=task_tag)
 
 
 
