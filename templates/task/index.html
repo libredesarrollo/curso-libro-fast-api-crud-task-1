@@ -1,0 +1,60 @@
+{% extends "task/master.html" %}
+
+{% block head %}
+{{ super() }}
+<meta name="description" content="List of task">
+{% endblock %}
+
+{% block title %} List {% endblock %}
+
+{% block content %}
+
+{% include 'task/_create.html' %}
+
+<table>
+    <tr>
+        <td>Id</td>
+        <td>Name</td>
+        <td>Category</td>
+        <td>Status</td>
+        <td>Options</td>
+    </tr>
+    {% for t in tasks %}
+    <tr>
+        <td>
+            {{ t.id }}
+        </td>
+        <td>
+            {{ t.name }}
+        </td>
+        <td>
+            {{ t.category.name }}
+        </td>
+        <td>
+            {{ t.status }}
+        </td>
+        <td>
+            <button class="edit" data-id="{{ t.id }}" data-name="{{ t.name }}" data-description="{{ t.description }}"
+                data-category="{{ t.category.id }}" data-status="{{ t.status.name }}">Edit</button>
+            <button class="delete" data-id="{{ t.id }}">Delete</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% include 'task/_update.html' %}
+
+<script>
+    document.querySelectorAll('.delete').forEach(b => {
+        b.addEventListener('click', function () {
+            let id = b.getAttribute('data-id')
+            fetch('/tasks/' + id, {
+                'method': 'DELETE',
+            })
+                .then(res => res.json())
+                .then(data => console.log(data))
+        })
+    })
+</script>
+
+{% endblock %}

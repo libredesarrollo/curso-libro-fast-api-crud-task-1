@@ -1,0 +1,71 @@
+<div id="editForm">
+    <label for="">Name</label>
+    <input type="text" name="name">
+
+    <label for="">Description</label>
+    <textarea name="description" id="" cols="30" rows="10"></textarea>
+
+    <label for="">Status</label>
+
+    <select name="status">
+        <option value="PENDING">Pending</option>
+        <option value="DONE">Done</option>
+    </select>
+
+    <label for="">Categories</label>
+
+    <select name="category_id">
+        <option value=""></option>
+
+        {% for c in categories %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="hidden" name="user_id" value="1">
+    <input type="hidden" name="id" value="">
+
+    <button id="editTask">Edit task</button>
+</div>
+
+
+<script>
+
+    // listen click button list
+
+    document.querySelectorAll('.edit').forEach((b) => {
+        b.addEventListener('click', function () {
+
+            document.querySelector('#editForm input[name="name"]').value = b.getAttribute('data-name')
+            document.querySelector('#editForm input[name="id"]').value = b.getAttribute('data-id')
+            document.querySelector('#editForm textarea[name="description"]').value = b.getAttribute('data-description')
+            document.querySelector('#editForm select[name="status"]').value = b.getAttribute('data-status')
+            document.querySelector('#editForm select[name="category_id"]').value = b.getAttribute('data-category')
+
+
+        })
+    })
+
+
+    // send data
+    document.getElementById('editTask').addEventListener('click', function () {
+
+        let data = {
+            "name": document.querySelector('#editForm input[name="name"]').value,
+            "description": document.querySelector('#editForm textarea[name="description"]').value,
+            "status": document.querySelector('#editForm select[name="status"]').value.toLowerCase(),
+            "category_id": document.querySelector('#editForm select[name="category_id"]').value,
+            "user_id": document.querySelector('#editForm input[name="user_id"]').value
+        }
+
+        let id =document.querySelector('#editForm input[name="id"]').value
+
+        fetch('/tasks/'+id, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+            headers: { "Content-type": "application/json" }
+        })
+            .then(res => res.json())
+            .then(data => console.log(data))
+    })
+</script>

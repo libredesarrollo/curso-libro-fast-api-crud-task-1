@@ -1,0 +1,82 @@
+<!-- form html -->
+<form action="/tasks/form-create" method="POST">
+    <label for="">Name</label>
+    <input type="text" name="name">
+
+    <label for="">Description</label>
+    <textarea name="description" id="" cols="30" rows="10"></textarea>
+
+    <label for="">Status</label>
+
+    <select name="status">
+        <option value="pending">Pending</option>
+        <option value="done">Done</option>
+    </select>
+
+    <label for="">Categories</label>
+
+    <select name="category_id">
+        <option value=""></option>
+
+        {% for c in categories %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="hidden" name="user_id" value="1">
+
+    <button type="submit">Create task by Form</button>
+</form>
+
+
+<!-- Peticiones JS -->
+<div id="createForm">
+    <label for="">Name</label>
+    <input type="text" name="name">
+
+    <label for="">Description</label>
+    <textarea name="description" id="" cols="30" rows="10"></textarea>
+
+    <label for="">Status</label>
+
+    <select name="status">
+        <option value="pending">Pending</option>
+        <option value="done">Done</option>
+    </select>
+
+    <label for="">Categories</label>
+
+    <select name="category_id">
+        <option value=""></option>
+
+        {% for c in categories %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="hidden" name="user_id" value="1">
+
+    <button id="createTask">Create task</button>
+</div>
+
+
+<script>
+    document.getElementById('createTask').addEventListener('click', function () {
+
+        let data = {
+            "name": document.querySelector('#createForm input[name="name"]').value,
+            "description": document.querySelector('#createForm textarea[name="description"]').value,
+            "status": document.querySelector('#createForm select[name="status"]').value,
+            "category_id": document.querySelector('#createForm select[name="category_id"]').value,
+            "user_id": document.querySelector('#createForm input[name="user_id"]').value
+        }
+
+        fetch('/tasks/', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { "Content-type": "application/json" }
+        })
+            .then(res => res.json())
+            .then(data => console.log(data))
+    })
+</script>
