@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, APIRouter, Query, Path, Request, Header, HTTPException, status
 from fastapi.templating import Jinja2Templates
 
+import time
 from typing import Optional
 from typing_extensions import Annotated
 
@@ -19,6 +20,21 @@ app = FastAPI()
 router = APIRouter()
 
 Base.metadata.create_all(bind=engine)
+
+#middlewares
+
+@app.middleware("http")
+async def add_process_time_to_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    print("process_time")
+    print(process_time)
+    return response
+
+
+#middlewares
 
 @router.get('/hello')
 def hello_world(db: Session = Depends(get_database_session)):
