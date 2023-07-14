@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional, List
+from datetime import datetime
 
 from pydantic import BaseModel, validator, Field, EmailStr, HttpUrl
 from fastapi import Form
@@ -23,6 +24,21 @@ class User(BaseModel):
     surname: str
     email: EmailStr
     website: str #HttpUrl
+    class Config:
+        orm_mode = True
+
+class UserCreate(User):
+    password: str
+
+class UserDB(User):
+    hashed_password: str
+
+class AccessToken(BaseModel):
+    user_id: int
+    access_token: str
+    expiration_date: datetime
+    class Config:
+        orm_mode = True
 
 class Task(BaseModel):
     name: str

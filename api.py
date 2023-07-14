@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, APIRouter, Query, Path, Request, Header, HTTPException, status
+from fastapi.security import APIKeyHeader
 from fastapi.templating import Jinja2Templates
 
 import time
@@ -10,11 +11,14 @@ from sqlalchemy.orm import Session
 templates = Jinja2Templates(directory="templates/")
 
 from task import task_router
+from user import user_router
+
 from myupload import upload_router
 
 from database.database import Base, engine, get_database_session
 from database.task import crud
-from database.models import Task, Category
+from database.models import Task, Category, User, AccessToken
+from authentication.authentication import verify_access_token
 
 app = FastAPI()
 router = APIRouter()
@@ -22,22 +26,41 @@ router = APIRouter()
 Base.metadata.create_all(bind=engine)
 
 #middlewares
-
-@app.middleware("http")
-async def add_process_time_to_header(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    print("process_time")
-    print(process_time)
-    return response
-
-
+# @app.middleware("http")
+# async def add_process_time_to_header(request: Request, call_next):
+#     start_time = time.time()
+#     response = await call_next(request)
+#     process_time = time.time() - start_time
+#     response.headers["X-Process-Time"] = str(process_time)
+#     print("process_time")
+#     print(process_time)
+#     return response
 #middlewares
 
+#TOKENS AUTH
+
+# TOKEN SIN BD
+# API_KEY_TOKEN = "SECRET_PASSWORD"
+# api_key_token = APIKeyHeader(name='Token')
+# @app.get("/protected-route")
+# def protected_route(token: str = Depends(api_key_token)):
+#     if token != API_KEY_TOKEN:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+#     return { 'hello':'fastapi' }
+# TOKEN CON BD esquema inicial
+# api_key_token = APIKeyHeader(name='Token')
+# def protected_route(token: str = Depends(api_key_token), db: Session = Depends(get_database_session)):
+#     user = db.query(User).join(AccessToken).filter(AccessToken.access_token == token).first()
+#     if user is None:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    # return { 'hello':'fastapi' }
+#TOKENS AUTH
+
+# @router.get('/hello', dependencies=[Depends(verify_access_token)])
 @router.get('/hello')
-def hello_world(db: Session = Depends(get_database_session)):
+def hello_world(user = Depends(verify_access_token),db: Session = Depends(get_database_session)):
+    print("********")
+    print(user.name)
     return { "hello": "world" }
 
 @app.get("/e_page")
@@ -89,9 +112,9 @@ def validate_token(token: str = Header()):
     if token != "TOKEN":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     
-@app.get('/route-protected', dependencies=[Depends(validate_token)])
-def protected_route(index:int):
-    return {'hello': 'FastAPI'}
+# @app.get('/route-protected', dependencies=[Depends(validate_token)])
+# def protected_route(index:int):
+#     return {'hello': 'FastAPI'}
 
 #VAR
 CurrentTaskId = Annotated[int, Depends(validate_token)]
@@ -102,4 +125,5 @@ def protected_route2(CurrentTaskId,index:int):
 
 app.include_router(router)
 app.include_router(task_router, prefix='/tasks')
+app.include_router(user_router)
 app.include_router(upload_router, prefix='/upload')
