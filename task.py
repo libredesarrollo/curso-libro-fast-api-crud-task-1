@@ -20,7 +20,7 @@ def get(db: Session = Depends(get_database_session)):
     # print(crud.getAll(db=db)[1].name)
     # crud.create(Task(name='Test',description='Descr', status= StatusType.DONE, category_id=1, user_id=1),db=db)
     # crud.update(1,Task(name='HOla MUndo 2',description='Descr', status= StatusType.DONE, category_id=2, user_id=1),db=db)
-    # print(crud.pagination(1,2,db))
+    print(crud.pagination(1,1,db))
     
     return { "tasks": crud.getAll(db) }
     # return { "tasks": [ TaskRead.from_orm(task) for task in crud.getAll(db) ] }

@@ -25,7 +25,7 @@ class User(BaseModel):
     email: EmailStr
     website: str #HttpUrl
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserCreate(User):
     password: str
@@ -38,7 +38,7 @@ class AccessToken(BaseModel):
     access_token: str
     expiration_date: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Task(BaseModel):
     name: str
@@ -64,8 +64,8 @@ class Task(BaseModel):
         return cls(name=name, description=description, status=status,category_id=category_id,user_id=user_id)
 
     class Config:
-        orm_mode=True
-        schema_extra = {
+        from_attributes=True
+        json_schema_extra = {
             "example": {
                 "id" : 123,
                 "name": "Salvar al mundo",

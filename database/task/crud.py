@@ -49,8 +49,8 @@ def delete(id: int, db: Session):
 
 def pagination(page: int, size:int, db: Session):
     pageParams = PageParams()
-    # pageParams.page = page
-    # pageParams.size = size
+    pageParams.page = page
+    pageParams.size = size
     return paginate(pageParams, db.query(models.Task), Task)
 
 
