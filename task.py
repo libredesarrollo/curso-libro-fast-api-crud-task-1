@@ -31,8 +31,8 @@ def get(id: int = Path(ge=1), db: Session = Depends(get_database_session)):
     # return Task.from_orm(crud.getById(id, db))
 # def add(request: Request, task:TaskWrite = Depends(TaskWrite.as_form), db: Session = Depends(get_database_session)):
 @task_router.post("/form-create",status_code=status.HTTP_201_CREATED)
-def addForm(task: TaskWrite = Depends(TaskWrite.as_form), db: Session = Depends(get_database_session)):
-    return { "tasks": crud.create(task,db=db) }
+def addForm(task: TaskWrite = Depends(TaskWrite.as_form), db: Session = Depends(get_database_session)) -> dict:
+    return { "tasks": Task.from_orm(crud.create(task,db=db)) }
 
 @task_router.post("/",status_code=status.HTTP_201_CREATED)
 def add(task: TaskWrite = Body(

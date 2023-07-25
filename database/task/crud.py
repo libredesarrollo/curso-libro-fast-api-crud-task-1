@@ -18,7 +18,7 @@ def getById(id: int, db: Session):
        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) 
     return task
 
-def create(task: Task, db: Session):
+def create(task: Task, db: Session) -> models.Task:
     taskdb = models.Task(name=task.name, description=task.description, status=task.status, category_id = task.category_id, user_id = task.user_id)
     db.add(taskdb)
     db.commit()
