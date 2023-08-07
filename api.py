@@ -70,13 +70,33 @@ def page(page: int = Query(1, ge=1, le=20, title='Esta es la pagina que quieres 
 
 
 @app.get("/e_phone/")  # +34 111 12-34-56
-# def phone(phone: str = Query(regex=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", example="+34 111 12-34-56")):
-def phone(phone: Annotated[str, Query(regex=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", example="+34 111 12-34-56")]):
+def phone(phone: str = Query(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", example="+34 111 12-34-56")):
+# def phone(phone: Annotated[str, Query(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", examples={
+#     "example": {
+#         "summary": "A normal example",
+#         "description": "A normal example",
+#         "value": "+34 111 12-34-56"
+#     }
+# })]):
     return {"phone": phone}
 
 
 @app.get("/ep_phone/{phone}")  # +34 111 12-34-56
-# def phone(phone: str = Path(regex=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", examples={
+def phone(phone: str = Path(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", examples={
+    "normal": {
+        "summary": "A normal example",
+        "description": "A normal example",
+        "value":
+            "+34 111 12-34-56"
+    },
+    "normal 2": {
+        "summary": "A normal example 2",
+        "description": "A normal example",
+        "value":
+            "+34 123 12-34-58"
+    }
+})):
+# def phone(phone: Annotated[str, Path(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", examples={
 #     "normal": {
 #         "summary": "A normal example",
 #         "description": "A normal example",
@@ -90,23 +110,8 @@ def phone(phone: Annotated[str, Query(regex=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})
 #             "+34 123 12-34-58"
 
 #     }
-# })
-def phone(phone: Annotated[str, Path(regex=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", examples={
-    "normal": {
-        "summary": "A normal example",
-        "description": "A normal example",
-        "value":
-            "+34 111 12-34-56"
-    },
-    "normal 2": {
-        "summary": "A normal example 2",
-        "description": "A normal example",
-        "value":
-            "+34 123 12-34-58"
-
-    }
-})]
-):
+# })]
+# ):
     return {"phone": phone}
 
 
@@ -141,6 +146,8 @@ def validate_token(token: str = Header()) -> None:
 
 # VAR
 CurrentTaskId = Annotated[int, Depends(validate_token)]
+
+
 @app.get('/route-protected2')
 def protected_route2(CurrentTaskId, index: int) -> dict:
     return {'hello': 'FastAPI'}

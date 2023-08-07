@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional, List
 from datetime import datetime
 
-from pydantic import BaseModel, validator, Field, EmailStr, HttpUrl
+from pydantic import BaseModel, field_validator, Field, EmailStr, HttpUrl
 from fastapi import Form
 
 class StatusType(str,Enum):
@@ -11,7 +11,7 @@ class StatusType(str,Enum):
 
 class Category(BaseModel):
     name: str
-    # class Config:
+    # class ConfigDict:
     #     schema_extra = {
     #         "example": {
     #             "id" : 1234,
@@ -24,7 +24,7 @@ class User(BaseModel):
     surname: str
     email: EmailStr
     website: str #HttpUrl
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 class UserCreate(User):
@@ -37,7 +37,7 @@ class AccessToken(BaseModel):
     user_id: int
     access_token: str
     expiration_date: datetime
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 class Task(BaseModel):
@@ -65,6 +65,8 @@ class Task(BaseModel):
 
     class Config:
         from_attributes=True
+        
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "id" : 123,
@@ -86,7 +88,7 @@ class Task(BaseModel):
             }
         }
 
-    @validator('name')
+    @field_validator('name') #validator
     def name_alphanumeric_and_whitespace(cls, v):
         if v.replace(" ", '').isalnum():
             return v
