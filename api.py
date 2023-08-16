@@ -38,7 +38,7 @@ Base.metadata.create_all(bind=engine)
 # TOKENS AUTH
 
 # TOKEN SIN BD
-# API_KEY_TOKEN = "SECRET_PASSWORD"
+# API_KEY_TOKEN = "LbZp2u9Q2BeAas9kyhlQraSsD7fmiAf2wMKKhjrh2pM"
 # api_key_token = APIKeyHeader(name='Token')
 # @app.get("/protected-route")
 # def protected_route(token: str = Depends(api_key_token)):
@@ -47,11 +47,12 @@ Base.metadata.create_all(bind=engine)
 #     return { 'hello':'fastapi' }
 # TOKEN CON BD esquema inicial
 # api_key_token = APIKeyHeader(name='Token')
+# @app.get("/protected-route")
 # def protected_route(token: str = Depends(api_key_token), db: Session = Depends(get_database_session)):
 #     user = db.query(User).join(AccessToken).filter(AccessToken.access_token == token).first()
 #     if user is None:
 #         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-# return { 'hello':'fastapi' }
+#     return { 'hello':'fastapi' }
 # TOKENS AUTH
 
 # @router.get('/hello', dependencies=[Depends(verify_access_token)])

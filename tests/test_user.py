@@ -1,57 +1,54 @@
-import httpx
-import pytest
+from fastapi.testclient import TestClient
 
+from database.database import get_database_session
+from api import app
 
-# @pytest.mark.asyncio
-# async def test_create_token(default_client: httpx.AsyncClient) -> None:
-#     payload = {
-#         'username': 'admin@admin.com',
-#         'password': '12345'
-#     }
+client = TestClient(app)
+app.dependency_overrides[get_database_session] = get_database_session
 
-#     headers = {
-#         'accept': 'application/json',
-#         # 'Content-Type': 'application/json'
-#     }
+def test_sign_new_user() -> None:
 
-#     response = await default_client.post('/token', data=payload, headers=headers)
+    payload = {
+        'email': 'admintesttestclient@admin.com',
+        'name': 'andres',
+        'surname': 'cruz',
+        'website': 'https://desarrollolibre.net/',
+        'password': '12345'
+    }
 
-#     assert response.status_code == 200
-#     assert "access_token" in response.json()
+    response = client.post('/register', json=payload)
 
-# @pytest.mark.asyncio
-# async def test_sign_new_user(default_client: httpx.AsyncClient) -> None:
+    assert response.status_code == 201
+    assert response.json() == {
+        "message": "User created succefully"
+    }
 
-#     payload = {
-#         'email': 'admintest@admin.com',
-#         'name': 'andres',
-#         'surname': 'cruz',
-#         'website': 'https://desarrollolibre.net/',
-#         'password': '12345'
-#     }
+    # assert response.status_code == 201
+    # data = response.json()
+    # assert data["email"] == "admintesttestclient@admin.com"
+    # assert "id" in data
 
-#     headers = {
-#         'accept': 'application/json',
-#         'Content-Type': 'application/json'
-#     }
+def test_login_user() -> None:
 
-#     response = await default_client.post('/register', json=payload, headers=headers)
+    payload = {
+        'username': 'admintesttestclient@admin.com',
+        'password': '12345'
+    }
+    
+    response = client.post('/token', data=payload)
 
-#     assert response.status_code == 201
-#     assert response.json() == {
-#         "message": "User created succefully"
-#     }
+    assert response.status_code == 200
+    data = response.json()
+    assert "access_token" in data
 
-
-@pytest.mark.asyncio
-async def test_logout(default_client: httpx.AsyncClient) -> None:
+def test_logout() -> None:
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json',
-        'Token': 'lYDVdzjgn3sVf-tpkxqfYMikld0yvQRah_YZo9bvF6M'
+        'Token': 'KAhfwSLxjYzclVKW13uJsut6-UC4w0XBPRXBnUWFMUg'
     }
 
-    response = await default_client.delete('/logout', headers=headers)
+    response = client.delete('/logout', headers=headers)
 
     assert response.status_code == 200
     assert response.json()['msj'] == 'ok'
