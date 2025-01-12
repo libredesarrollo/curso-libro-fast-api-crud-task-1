@@ -9,7 +9,7 @@ from fastapi import FastAPI, Depends, APIRouter, Query, Path, Request, Header, H
 from fastapi.security import APIKeyHeader
 from fastapi.templating import Jinja2Templates
 
-import time
+
 from typing import Optional
 from typing_extensions import Annotated
 
@@ -17,6 +17,9 @@ from sqlalchemy.orm import Session
 
 templates = Jinja2Templates(directory="templates/")
 
+
+# uvicorn api:app --reload
+# 
 
 app = FastAPI()
 router = APIRouter()
