@@ -4,8 +4,18 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 # DATABASE_URL = "mysql+mysqlconnector://root:password@localhost:3306/fastapi"
 # DATABASE_URL = "mysql+mysqlconnector://root@localhost:3306/fastapi"
-DATABASE_URL = "mysql+pymysql://root@localhost:3306/fastapi"
-engine = create_engine(DATABASE_URL)
+# DATABASE_URL = "mysql+pymysql://root@localhost:3306/fastapi"
+# engine = create_engine(DATABASE_URL)
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Archivo SQLite en la raíz del proyecto
+DATABASE_URL = "sqlite:///./app.db"
+
+# SQLite necesita este argumento para evitar errores de threading
+engine = create_engine(
+    DATABASE_URL, connect_args={"check_same_thread": False}
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
