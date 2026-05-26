@@ -6,6 +6,8 @@ from database.task import crud
 
 from schemes import Task, TaskRead, TaskWrite
 from dataexample import taskWithORM
+from config import DEMO_MODE
+from database import models
 
 task_router = APIRouter()
 
@@ -36,6 +38,16 @@ def get(id: int = Path(ge=1), db: Session = Depends(get_database_session)):
 
 @task_router.post("/form-create", status_code=status.HTTP_201_CREATED)
 def addForm(task: TaskWrite = Depends(TaskWrite.as_form), db: Session = Depends(get_database_session)) -> dict:
+    if DEMO_MODE:
+        fake_task = models.Task(
+            id=999,
+            name=task.name,
+            description=task.description,
+            status=task.status,
+            category_id=task.category_id,
+            user_id=task.user_id
+        )
+        return {"tasks": Task.from_orm(fake_task)}
     return {"tasks": Task.from_orm(crud.create(task, db=db))}
 
 
@@ -44,6 +56,16 @@ def add(task: TaskWrite = Body(
     examples=taskWithORM
 ), db: Session = Depends(get_database_session)):
 
+    if DEMO_MODE:
+        fake_task = models.Task(
+            id=999,
+            name=task.name,
+            description=task.description,
+            status=task.status,
+            category_id=task.category_id,
+            user_id=task.user_id
+        )
+        return {"tasks": fake_task}
     # return { "tasks": TaskWrite.from_orm(crud.create(task,db=db)) }
     return {"tasks": crud.create(task, db=db)}
 
@@ -52,11 +74,23 @@ def add(task: TaskWrite = Body(
 def update(id: int = Path(ge=1), task: TaskWrite = Body(
         examples=taskWithORM), db: Session = Depends(get_database_session)):
 
+    if DEMO_MODE:
+        fake_task = models.Task(
+            id=id,
+            name=task.name,
+            description=task.description,
+            status=task.status,
+            category_id=task.category_id,
+            user_id=task.user_id
+        )
+        return {"task": fake_task}
     return {"task": crud.update(id, task, db)}
 
 
 @task_router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete(id: int = Path(ge=1), db: Session = Depends(get_database_session)):
+    if DEMO_MODE:
+        return {'msj': 'ok'}
     crud.delete(id, db)
     return {'msj': 'ok'}
     # return { "tasks": crud.getAll(db) }
@@ -66,9 +100,33 @@ def delete(id: int = Path(ge=1), db: Session = Depends(get_database_session)):
 
 @task_router.put("/tag/add/{id}", status_code=status.HTTP_200_OK)
 def tagAdd(id: int = Path(ge=1), idTag: int = Body(ge=1), db: Session = Depends(get_database_session)):
+    if DEMO_MODE:
+        try:
+            return crud.getById(id, db)
+        except Exception:
+            return models.Task(
+                id=id,
+                name="Simulated Task",
+                description="Simulated Description",
+                status="pending",
+                category_id=1,
+                user_id=1
+            )
     return crud.tagAdd(id, idTag, db)
 
 
 @task_router.delete("/tag/remove/{id}", status_code=status.HTTP_200_OK)
 def tagRemove(id: int = Path(ge=1), idTag: int = Body(ge=1), db: Session = Depends(get_database_session)):
+    if DEMO_MODE:
+        try:
+            return crud.getById(id, db)
+        except Exception:
+            return models.Task(
+                id=id,
+                name="Simulated Task",
+                description="Simulated Description",
+                status="pending",
+                category_id=1,
+                user_id=1
+            )
     return crud.tagRemove(id, idTag, db)

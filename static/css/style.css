@@ -542,3 +542,50 @@ footer a {
 footer a:hover {
     text-decoration: underline;
 }
+
+/* Demo Mode Banner & Badge styling */
+.demo-banner {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.25);
+    z-index: 1000;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.demo-banner-close {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.8;
+    transition: opacity var(--transition-speed);
+}
+
+.demo-banner-close:hover {
+    opacity: 1;
+}
+
+.demo-badge {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+    margin-left: 0.5rem;
+    text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+

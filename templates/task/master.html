@@ -14,10 +14,17 @@
     {% endblock %}
 </head>
 <body>
+    {% if DEMO_MODE %}
+        <div class="demo-banner">
+            <span>🛡️ <strong>Modo Demo Activo</strong> — Las acciones de creación, edición y eliminación son simuladas.</span>
+            <button class="demo-banner-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+    {% endif %}
+
     <header>
         <nav class="navbar">
             <a href="/" class="nav-brand">
-                <span>🚀</span> FastAPI Portal
+                <span>🚀</span> FastAPI Portal {% if DEMO_MODE %}<span class="demo-badge">DEMO</span>{% endif %}
             </a>
             <ul class="nav-links">
                 <li><a href="/" id="nav-home">Inicio</a></li>

@@ -58,6 +58,9 @@ def verify_access_token(token: str = Depends(auth_shema), db: Session = Depends(
 
 api_key_token = APIKeyHeader(name='Token')
 def logout(token: str = Depends(api_key_token), db: Session = Depends(get_database_session)):
+    from config import DEMO_MODE
+    if DEMO_MODE:
+        return
     access_token = db.query(AccessToken).join(User).filter(AccessToken.access_token == token).first()
 
     if access_token is None:

@@ -15,7 +15,10 @@ from typing_extensions import Annotated
 
 from sqlalchemy.orm import Session
 
+from config import DEMO_MODE
+
 templates = Jinja2Templates(directory="templates/")
+templates.env.globals['DEMO_MODE'] = DEMO_MODE
 
 
 # uvicorn api:app --reload

@@ -23,12 +23,17 @@ def create_token(form_data : OAuth2PasswordRequestForm = Depends(OAuth2PasswordR
 
 @user_router.post('/register', status_code=status.HTTP_201_CREATED)
 def register(user: UserCreate, db:Session = Depends(database.get_database_session)): #  -> models.User
-
+    from config import DEMO_MODE
     user_exist = db.query(models.User).filter(models.User.email == user.email).first()
     if user_exist:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="User email already exist")
     
+    if DEMO_MODE:
+        return {
+            "message": "User created succefully"
+        }
+
     hashed_password = password_old.get_password_hash(user.password)
     print(hashed_password)
 
