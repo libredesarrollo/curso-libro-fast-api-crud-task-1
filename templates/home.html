@@ -1,0 +1,316 @@
+{% extends "task/master.html" %}
+
+{% block head %}
+{{ super() }}
+<meta name="description" content="Dashboard Central del Proyecto FastAPI - Control de tareas, usuarios y archivos.">
+{% endblock %}
+
+{% block title %} Panel Central {% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title">Panel de Control Central</h1>
+    <p class="dashboard-subtitle">Explora y gestiona los diferentes módulos y endpoints de la aplicación en tiempo real.</p>
+</div>
+
+<div class="grid-dashboard">
+    <!-- Card 1: Task Manager -->
+    <div class="card">
+        <div class="card-icon">📋</div>
+        <h2 class="card-title">Gestor de Tareas</h2>
+        <p class="card-description">Módulo para crear, visualizar, actualizar y eliminar tareas con clasificación por categorías.</p>
+        <div style="margin-top: auto;">
+            <a href="/page" class="btn btn-primary" style="width: 100%;">
+                <span>⚙️</span> Abrir Gestor de Tareas
+            </a>
+        </div>
+    </div>
+
+    <!-- Card 2: Authentication -->
+    <div class="card">
+        <div class="card-icon">🔐</div>
+        <h2 class="card-title">Acceso y Registro</h2>
+        <p class="card-description">Regístrate y obtén un token de acceso OAuth2 para interactuar con rutas protegidas.</p>
+        
+        <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchTab('login')">Ingresar</button>
+            <button class="tab-btn" onclick="switchTab('register')">Registrarse</button>
+        </div>
+
+        <!-- Login Tab -->
+        <div id="tab-login" class="tab-content active">
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="username" required placeholder="admin@admin.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Obtener Token</button>
+            </form>
+        </div>
+
+        <!-- Register Tab -->
+        <div id="tab-register" class="tab-content">
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="name" required placeholder="Juan" minlength="5">
+                </div>
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" name="surname" required placeholder="Pérez">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required placeholder="juan@correo.com">
+                </div>
+                <div class="form-group">
+                    <label>Sitio Web</label>
+                    <input type="url" name="website" required placeholder="https://miweb.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Registrar Usuario</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Card 3: File Uploader -->
+    <div class="card">
+        <div class="card-icon">📁</div>
+        <h2 class="card-title">Subida de Archivos</h2>
+        <p class="card-description">Sube imágenes u otros archivos al servidor mediante peticiones multipart y visualiza la respuesta del API.</p>
+        
+        <div class="upload-zone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text">Arrastra un archivo aquí o <strong>haz clic para buscar</strong></div>
+            <input type="file" id="fileInput" onchange="handleFileSelect(event)">
+        </div>
+        <div id="file-info" style="margin-top: 10px; font-size: 0.85rem; color: var(--text-secondary); text-align: center;"></div>
+        <button id="uploadBtn" class="btn btn-secondary" style="width: 100%; margin-top: 10px; display: none;" onclick="uploadFile()">Subir al servidor</button>
+        
+        <div class="response-block" id="uploadResponse" style="display: none;"></div>
+    </div>
+
+    <!-- Card 4: API Playground -->
+    <div class="card">
+        <div class="card-icon">⚡</div>
+        <h2 class="card-title">Consola de Pruebas API</h2>
+        <p class="card-description">Prueba en tiempo real peticiones autenticadas al endpoint protegido <code>GET /hello</code>.</p>
+        
+        <div style="margin-bottom: 1rem;">
+            <button class="btn btn-primary" style="width: 100%;" onclick="testHelloEndpoint()">
+                <span>🔑</span> Ejecutar GET /hello
+            </button>
+        </div>
+        
+        <label>Respuesta de la API:</label>
+        <div class="response-block" id="helloResponse">Esperando ejecución...</div>
+    </div>
+
+    <!-- Card 5: API Documentation -->
+    <div class="card" style="grid-column: span 1;">
+        <div class="card-icon">📖</div>
+        <h2 class="card-title">Documentación de la API</h2>
+        <p class="card-description">Accede a las especificaciones interactivas de OpenAPI autogeneradas por FastAPI.</p>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <a href="/docs" target="_blank" class="btn btn-primary">
+                <span>📘</span> Swagger UI (/docs)
+            </a>
+            <a href="/redoc" target="_blank" class="btn btn-secondary">
+                <span>📕</span> ReDoc UI (/redoc)
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        event.currentTarget.classList.add('active');
+        document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    // Handle Login (obtain token)
+    function handleLogin(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new URLSearchParams();
+        formData.append('username', form.username.value);
+        formData.append('password', form.password.value);
+
+        fetch('/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Credenciales inválidas');
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+                window.showToast('Acceso autorizado. Token guardado.', 'success');
+                window.dispatchEvent(new Event('authChange'));
+                form.reset();
+            }
+        })
+        .catch(err => {
+            window.showToast(err.message, 'danger');
+        });
+    }
+
+    // Handle Register
+    function handleRegister(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            name: form.name.value,
+            surname: form.surname.value,
+            email: form.email.value,
+            website: form.website.value,
+            password: form.password.value
+        };
+
+        fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(async res => {
+            const resData = await res.json();
+            if (!res.ok) {
+                throw new Error(resData.detail || 'Error al registrar usuario');
+            }
+            return resData;
+        })
+        .then(data => {
+            window.showToast(data.message || 'Registro exitoso. Ahora puedes iniciar sesión.', 'success');
+            switchTab('login');
+            // prefill email
+            document.querySelector('#tab-login input[name="username"]').value = form.email.value;
+            form.reset();
+        })
+        .catch(err => {
+            window.showToast(err.message, 'danger');
+        });
+    }
+
+    // Drag and Drop & File Upload handlers
+    const dropzone = document.getElementById('dropzone');
+    let selectedFile = null;
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, e => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, e => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+        }, false);
+    });
+
+    dropzone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+            setFile(files[0]);
+        }
+    });
+
+    function handleFileSelect(e) {
+        const files = e.target.files;
+        if (files.length) {
+            setFile(files[0]);
+        }
+    }
+
+    function setFile(file) {
+        selectedFile = file;
+        document.getElementById('file-info').innerText = `Archivo seleccionado: ${file.name} (${(file.size/1024).toFixed(2)} KB)`;
+        document.getElementById('uploadBtn').style.display = 'inline-flex';
+    }
+
+    function uploadFile() {
+        if (!selectedFile) return;
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        fetch('/upload/uploadfile2', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            const responseBlock = document.getElementById('uploadResponse');
+            responseBlock.style.display = 'block';
+            responseBlock.innerText = JSON.stringify(data, null, 4);
+            window.showToast('Archivo subido correctamente a img/image.png', 'success');
+        })
+        .catch(err => {
+            window.showToast('Error al subir archivo', 'danger');
+            console.error(err);
+        });
+    }
+
+    // Test hello endpoint
+    function testHelloEndpoint() {
+        const token = localStorage.getItem('access_token');
+        const headers = {};
+        
+        if (token) {
+            // Wait, OAuth2PasswordBearer expects "Authorization: Bearer <token>"
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        fetch('/hello', {
+            method: 'GET',
+            headers: headers
+        })
+        .then(async res => {
+            const isJson = res.headers.get('content-type')?.includes('application/json');
+            const data = isJson ? await res.json() : await res.text();
+            
+            const responseBlock = document.getElementById('helloResponse');
+            if (res.ok) {
+                responseBlock.className = 'response-block';
+                responseBlock.innerText = `[Status ${res.status} OK]\n` + JSON.stringify(data, null, 4);
+                window.showToast('Petición autenticada con éxito', 'success');
+            } else {
+                responseBlock.className = 'response-block style-danger';
+                responseBlock.style.color = '#f87171';
+                responseBlock.innerText = `[Status ${res.status} Error]\n` + JSON.stringify(data, null, 4);
+                window.showToast('Petición fallida. ¿Estás logueado?', 'danger');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            const responseBlock = document.getElementById('helloResponse');
+            responseBlock.className = 'response-block';
+            responseBlock.style.color = '#f87171';
+            responseBlock.innerText = `Error de red:\n` + err.message;
+            window.showToast('Error de red al conectar al endpoint', 'danger');
+        });
+    }
+</script>
+{% endblock %}

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # from time
 from database.models import User, AccessToken
 from database.database import get_database_session
-from authentication.password import verify_password, generate_token
+from authentication.password_old import verify_password, generate_token
 
 def authenticate(email: str, password: str, db: Session) -> User|None:
     user = db.query(User).filter(User.email == email).first()

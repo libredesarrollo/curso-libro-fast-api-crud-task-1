@@ -1,71 +1,119 @@
-<div id="editForm">
-    <label for="">Name</label>
-    <input type="text" name="name">
+<div class="task-form-card" id="editFormCard" style="display: none; border-color: rgba(37, 99, 235, 0.4);">
+    <h3>✏️ Editar Tarea <span id="edit-task-id" style="color: var(--text-secondary); font-size: 0.9rem;"></span></h3>
+    
+    <div id="editForm">
+        <input type="hidden" name="id" value="">
+        <input type="hidden" name="user_id" value="1">
 
-    <label for="">Description</label>
-    <textarea name="description" id="" cols="30" rows="10"></textarea>
+        <div class="form-group">
+            <label>Nombre de la Tarea</label>
+            <input type="text" name="name" placeholder="Ej. Tarea a actualizar">
+        </div>
 
-    <label for="">Status</label>
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="description" rows="3" placeholder="Detalles de la tarea..."></textarea>
+        </div>
 
-    <select name="status">
-        <option value="PENDING">Pending</option>
-        <option value="DONE">Done</option>
-    </select>
+        <div class="form-group">
+            <label>Estado</label>
+            <select name="status">
+                <option value="PENDING">Pendiente (Pending)</option>
+                <option value="DONE">Terminado (Done)</option>
+            </select>
+        </div>
 
-    <label for="">Categories</label>
+        <div class="form-group">
+            <label>Categoría</label>
+            <select name="category_id">
+                <option value=""></option>
+                {% for c in categories %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <select name="category_id">
-        <option value=""></option>
-
-        {% for c in categories %}
-        <option value="{{ c.id }}">{{ c.name }}</option>
-        {% endfor %}
-    </select>
-
-    <input type="hidden" name="user_id" value="1">
-    <input type="hidden" name="id" value="">
-
-    <button id="editTask">Edit task</button>
+        <div style="display: flex; gap: 0.5rem;">
+            <button id="editTask" class="btn btn-primary" style="flex: 1;">
+                Guardar Cambios
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
+                Cancelar
+            </button>
+        </div>
+    </div>
 </div>
 
-
 <script>
-
     // listen click button list
-
     document.querySelectorAll('.edit').forEach((b) => {
         b.addEventListener('click', function () {
+            // Show edit form card and scroll to it
+            const card = document.getElementById('editFormCard');
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth' });
 
-            document.querySelector('#editForm input[name="name"]').value = b.getAttribute('data-name')
-            document.querySelector('#editForm input[name="id"]').value = b.getAttribute('data-id')
-            document.querySelector('#editForm textarea[name="description"]').value = b.getAttribute('data-description')
-            document.querySelector('#editForm select[name="status"]').value = b.getAttribute('data-status')
-            document.querySelector('#editForm select[name="category_id"]').value = b.getAttribute('data-category')
+            const id = b.getAttribute('data-id');
+            document.getElementById('edit-task-id').innerText = `(ID: ${id})`;
 
+            document.querySelector('#editForm input[name="name"]').value = b.getAttribute('data-name');
+            document.querySelector('#editForm input[name="id"]').value = id;
+            document.querySelector('#editForm textarea[name="description"]').value = b.getAttribute('data-description');
+            
+            // Handle lowercase vs uppercase state value
+            const rawStatus = b.getAttribute('data-status');
+            document.querySelector('#editForm select[name="status"]').value = rawStatus.toUpperCase();
+            
+            document.querySelector('#editForm select[name="category_id"]').value = b.getAttribute('data-category');
+        });
+    });
 
-        })
-    })
-
+    function cancelEdit() {
+        document.getElementById('editFormCard').style.display = 'none';
+    }
 
     // send data
     document.getElementById('editTask').addEventListener('click', function () {
+        let name = document.querySelector('#editForm input[name="name"]').value;
+        let description = document.querySelector('#editForm textarea[name="description"]').value;
+        let status = document.querySelector('#editForm select[name="status"]').value.toLowerCase();
+        let category_id = document.querySelector('#editForm select[name="category_id"]').value;
+        let user_id = document.querySelector('#editForm input[name="user_id"]').value;
+        let id = document.querySelector('#editForm input[name="id"]').value;
 
-        let data = {
-            "name": document.querySelector('#editForm input[name="name"]').value,
-            "description": document.querySelector('#editForm textarea[name="description"]').value,
-            "status": document.querySelector('#editForm select[name="status"]').value.toLowerCase(),
-            "category_id": document.querySelector('#editForm select[name="category_id"]').value,
-            "user_id": document.querySelector('#editForm input[name="user_id"]').value
+        if (!name || !category_id) {
+            window.showToast('El nombre y la categoría son requeridos', 'warning');
+            return;
         }
 
-        let id =document.querySelector('#editForm input[name="id"]').value
+        let data = {
+            "name": name,
+            "description": description,
+            "status": status,
+            "category_id": parseInt(category_id),
+            "user_id": parseInt(user_id)
+        }
 
-        fetch('/tasks/'+id, {
+        fetch('/tasks/' + id, {
             method: 'PUT',
             body: JSON.stringify(data),
             headers: { "Content-type": "application/json" }
         })
-            .then(res => res.json())
-            .then(data => console.log(data))
-    })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => { throw new Error(err.detail || 'Error al actualizar la tarea') });
+            }
+            return res.json();
+        })
+        .then(data => {
+            window.showToast('¡Tarea actualizada con éxito!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(err => {
+            window.showToast(err.message, 'danger');
+            console.error(err);
+        });
+    });
 </script>

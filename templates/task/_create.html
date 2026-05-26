@@ -1,74 +1,126 @@
-<!-- form html -->
-<form action="/tasks/form-create" method="POST">
-    <label for="">Name</label>
-    <input type="text" name="name">
+<div class="task-form-card">
+    <div class="tabs-header" style="margin-bottom: 1rem;">
+        <button class="tab-btn active" id="btn-create-ajax" onclick="switchCreateMode('ajax')">Crear por AJAX (JS)</button>
+        <button class="tab-btn" id="btn-create-form" onclick="switchCreateMode('form')">Crear por Form HTML</button>
+    </div>
 
-    <label for="">Description</label>
-    <textarea name="description" id="" cols="30" rows="10"></textarea>
+    <!-- Mode AJAX -->
+    <div id="create-mode-ajax" class="form-container-mode">
+        <div id="createForm">
+            <div class="form-group">
+                <label>Nombre de la Tarea</label>
+                <input type="text" name="name" placeholder="Ej. Comprar leche">
+            </div>
 
-    <label for="">Status</label>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="description" rows="3" placeholder="Detalles de la tarea..."></textarea>
+            </div>
 
-    <select name="status">
-        <option value="pending">Pending</option>
-        <option value="done">Done</option>
-    </select>
+            <div class="form-group">
+                <label>Estado</label>
+                <select name="status">
+                    <option value="pending">Pendiente (Pending)</option>
+                    <option value="done">Terminado (Done)</option>
+                </select>
+            </div>
 
-    <label for="">Categories</label>
+            <div class="form-group">
+                <label>Categoría</label>
+                <select name="category_id">
+                    <option value=""></option>
+                    {% for c in categories %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-    <select name="category_id">
-        <option value=""></option>
+            <input type="hidden" name="user_id" value="1">
 
-        {% for c in categories %}
-        <option value="{{ c.id }}">{{ c.name }}</option>
-        {% endfor %}
-    </select>
+            <button id="createTask" class="btn btn-primary" style="width: 100%;">
+                <span>➕</span> Crear Tarea (AJAX)
+            </button>
+        </div>
+    </div>
 
-    <input type="hidden" name="user_id" value="1">
+    <!-- Mode Native Form -->
+    <div id="create-mode-form" class="form-container-mode" style="display: none;">
+        <form action="/tasks/form-create" method="POST">
+            <div class="form-group">
+                <label>Nombre de la Tarea</label>
+                <input type="text" name="name" required placeholder="Ej. Aprender FastAPI">
+            </div>
 
-    <button type="submit">Create task by Form</button>
-</form>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="description" rows="3" placeholder="Detalles..."></textarea>
+            </div>
 
+            <div class="form-group">
+                <label>Estado</label>
+                <select name="status">
+                    <option value="pending">Pendiente (Pending)</option>
+                    <option value="done">Terminado (Done)</option>
+                </select>
+            </div>
 
-<!-- Peticiones JS -->
-<div id="createForm">
-    <label for="">Name</label>
-    <input type="text" name="name">
+            <div class="form-group">
+                <label>Categoría</label>
+                <select name="category_id" required>
+                    <option value=""></option>
+                    {% for c in categories %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-    <label for="">Description</label>
-    <textarea name="description" id="" cols="30" rows="10"></textarea>
+            <input type="hidden" name="user_id" value="1">
 
-    <label for="">Status</label>
-
-    <select name="status">
-        <option value="pending">Pending</option>
-        <option value="done">Done</option>
-    </select>
-
-    <label for="">Categories</label>
-
-    <select name="category_id">
-        <option value=""></option>
-
-        {% for c in categories %}
-        <option value="{{ c.id }}">{{ c.name }}</option>
-        {% endfor %}
-    </select>
-
-    <input type="hidden" name="user_id" value="1">
-
-    <button id="createTask">Create task</button>
+            <button type="submit" class="btn btn-success" style="width: 100%;">
+                <span>🚀</span> Enviar por Formulario
+            </button>
+        </form>
+    </div>
 </div>
 
-
 <script>
+    function switchCreateMode(mode) {
+        const btnAjax = document.getElementById('btn-create-ajax');
+        const btnForm = document.getElementById('btn-create-form');
+        const viewAjax = document.getElementById('create-mode-ajax');
+        const viewForm = document.getElementById('create-mode-form');
+
+        if (mode === 'ajax') {
+            btnAjax.classList.add('active');
+            btnForm.classList.remove('active');
+            viewAjax.style.display = 'block';
+            viewForm.style.display = 'none';
+        } else {
+            btnAjax.classList.remove('active');
+            btnForm.classList.add('active');
+            viewAjax.style.display = 'none';
+            viewForm.style.display = 'block';
+        }
+    }
+
     document.getElementById('createTask').addEventListener('click', function () {
+        let name = document.querySelector('#createForm input[name="name"]').value;
+        let description = document.querySelector('#createForm textarea[name="description"]').value;
+        let status = document.querySelector('#createForm select[name="status"]').value;
+        let category_id = document.querySelector('#createForm select[name="category_id"]').value;
+        let user_id = document.querySelector('#createForm input[name="user_id"]').value;
+
+        if (!name || !category_id) {
+            window.showToast('El nombre y la categoría son requeridos', 'warning');
+            return;
+        }
 
         let data = {
-            "name": document.querySelector('#createForm input[name="name"]').value,
-            "description": document.querySelector('#createForm textarea[name="description"]').value,
-            "status": document.querySelector('#createForm select[name="status"]').value,
-            "category_id": document.querySelector('#createForm select[name="category_id"]').value,
-            "user_id": document.querySelector('#createForm input[name="user_id"]').value
+            "name": name,
+            "description": description,
+            "status": status,
+            "category_id": parseInt(category_id),
+            "user_id": parseInt(user_id)
         }
 
         fetch('/tasks/', {
@@ -76,7 +128,21 @@
             body: JSON.stringify(data),
             headers: { "Content-type": "application/json" }
         })
-            .then(res => res.json())
-            .then(data => console.log(data))
-    })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => { throw new Error(err.detail || 'Error al crear la tarea') });
+            }
+            return res.json();
+        })
+        .then(data => {
+            window.showToast('¡Tarea creada con éxito!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(err => {
+            window.showToast(err.message, 'danger');
+            console.error(err);
+        });
+    });
 </script>

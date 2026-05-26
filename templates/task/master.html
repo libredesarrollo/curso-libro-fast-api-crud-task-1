@@ -1,23 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     {% block head %}
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %} {% endblock %} - FAST API</title>
+        <title>{% block title %} {% endblock %} - FastAPI Portal</title>
+        <!-- Fonts & CSS -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/style.css">
     {% endblock %}
 </head>
 <body>
+    <header>
+        <nav class="navbar">
+            <a href="/" class="nav-brand">
+                <span>🚀</span> FastAPI Portal
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" id="nav-home">Inicio</a></li>
+                <li><a href="/page" id="nav-tasks">Tareas</a></li>
+                <li><a href="/docs" target="_blank">Docs (Swagger)</a></li>
+                <li><a href="/redoc" target="_blank">Redoc</a></li>
+            </ul>
+            <div id="nav-auth-status" class="user-status">
+                <span>👤 Invitado</span>
+            </div>
+        </nav>
+    </header>
+
     <div class="container">
         {% block content %}        
             
         {% endblock %}
     </div>
 
-    {% block footer %}
-        <p>DL by <a href="#">Contact</a></p>
-    {% endblock %}
+    <div id="toast-container" class="toast-container"></div>
 
+    <footer>
+        {% block footer %}
+            <p>&copy; 2026 FastAPI Tasks Portal. Desarrollado por <a href="https://desarrollolibre.net" target="_blank">Desarrollo Libre</a></p>
+        {% endblock %}
+    </footer>
+
+    <!-- Global Layout Scripts -->
+    <script>
+        // Toast helper
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <span style="cursor:pointer; font-weight:bold; margin-left: 10px;" onclick="this.parentElement.remove()">&times;</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                toast.style.transition = 'opacity 0.5s, transform 0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        };
+
+        // Active nav highlights
+        const path = window.location.pathname;
+        if (path === '/') {
+            document.getElementById('nav-home').classList.add('active');
+        } else if (path === '/page') {
+            document.getElementById('nav-tasks').classList.add('active');
+        }
+
+        // Check authentication status
+        function updateAuthUI() {
+            const token = localStorage.getItem('access_token');
+            const authDiv = document.getElementById('nav-auth-status');
+            
+            if (token) {
+                authDiv.className = 'user-status logged-in';
+                authDiv.innerHTML = `
+                    <span>🟢 Conectado</span>
+                    <button onclick="globalLogout()">Salir</button>
+                `;
+            } else {
+                authDiv.className = 'user-status';
+                authDiv.innerHTML = `
+                    <span>👤 Invitado</span>
+                `;
+            }
+        }
+
+        function globalLogout() {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+
+            fetch('/logout', {
+                method: 'DELETE',
+                headers: {
+                    'Token': token
+                }
+            })
+            .then(res => {
+                localStorage.removeItem('access_token');
+                window.showToast('Sesión cerrada con éxito', 'success');
+                updateAuthUI();
+                // Dispatch event so subpages can refresh
+                window.dispatchEvent(new Event('authChange'));
+                if (window.location.pathname === '/page') {
+                    // refresh tasks page
+                    window.location.reload();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                localStorage.removeItem('access_token');
+                updateAuthUI();
+                window.dispatchEvent(new Event('authChange'));
+            });
+        }
+
+        // Initialize UI
+        updateAuthUI();
+
+        // Listen for internal auth changes
+        window.addEventListener('authChange', updateAuthUI);
+    </script>
 </body>
 </html>

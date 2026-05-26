@@ -2,59 +2,130 @@
 
 {% block head %}
 {{ super() }}
-<meta name="description" content="List of task">
+<meta name="description" content="Lista interactiva de tareas en el gestor de FastAPI.">
 {% endblock %}
 
-{% block title %} List {% endblock %}
+{% block title %} Tareas {% endblock %}
 
 {% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h1 class="dashboard-title">Gestión de Tareas</h1>
+    <p class="dashboard-subtitle">Visualiza, edita y crea tareas asignadas a tu cuenta.</p>
+</div>
 
-{% include 'task/_create.html' %}
+<div class="task-layout">
+    <!-- Left Column: Tasks Table -->
+    <div>
+        <div class="card" style="padding: 1.5rem; overflow-x: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 700;">Listado de Tareas</h3>
+                <span style="font-size: 0.85rem; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 0.2rem 0.6rem; border-radius: 4px;">
+                    Total: {{ tasks|length }}
+                </span>
+            </div>
+            
+            {% if tasks|length > 0 %}
+            <table style="margin: 0;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th style="text-align: right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tasks %}
+                    <tr>
+                        <td style="font-family: monospace; font-weight: bold; color: var(--text-secondary);">
+                            #{{ t.id }}
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;">{{ t.name }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                {{ t.description or 'Sin descripción' }}
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size: 0.9rem; background: rgba(124, 58, 237, 0.1); color: #a78bfa; padding: 0.25rem 0.5rem; border-radius: 4px;">
+                                {{ t.category.name if t.category else 'General' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if t.status.value == 'done' or t.status == 'done' or t.status == 'DONE' or t.status.name == 'DONE' %}
+                            <span class="badge badge-done">Terminado</span>
+                            {% else %}
+                            <span class="badge badge-pending">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 0.25rem;">
+                                <button class="btn btn-secondary edit" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;" 
+                                    data-id="{{ t.id }}" 
+                                    data-name="{{ t.name }}" 
+                                    data-description="{{ t.description }}"
+                                    data-category="{{ t.category.id if t.category else '' }}" 
+                                    data-status="{{ t.status.name if t.status.name is defined else t.status }}">
+                                    ✏️ Editar
+                                </button>
+                                <button class="btn btn-danger delete" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;" 
+                                    data-id="{{ t.id }}">
+                                    🗑️ Borrar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="text-align: center; padding: 3rem 1.5rem; color: var(--text-secondary);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                <p>No hay tareas registradas.</p>
+                <p style="font-size: 0.85rem; margin-top: 0.5rem;">Crea una nueva tarea utilizando el panel de la derecha.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
-<table>
-    <tr>
-        <td>Id</td>
-        <td>Name</td>
-        <td>Category</td>
-        <td>Status</td>
-        <td>Options</td>
-    </tr>
-    {% for t in tasks %}
-    <tr>
-        <td>
-            {{ t.id }}
-        </td>
-        <td>
-            {{ t.name }}
-        </td>
-        <td>
-            {{ t.category.name }}
-        </td>
-        <td>
-            {{ t.status }}
-        </td>
-        <td>
-            <button class="edit" data-id="{{ t.id }}" data-name="{{ t.name }}" data-description="{{ t.description }}"
-                data-category="{{ t.category.id }}" data-status="{{ t.status.name }}">Edit</button>
-            <button class="delete" data-id="{{ t.id }}">Delete</button>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
-{% include 'task/_update.html' %}
+    <!-- Right Column: Create & Edit Forms -->
+    <div>
+        <!-- Create Task component -->
+        {% include 'task/_create.html' %}
+        
+        <!-- Update Task component (hidden by default) -->
+        {% include 'task/_update.html' %}
+    </div>
+</div>
 
 <script>
+    // Delete action handler
     document.querySelectorAll('.delete').forEach(b => {
         b.addEventListener('click', function () {
-            let id = b.getAttribute('data-id')
-            fetch('/tasks/' + id, {
-                'method': 'DELETE',
-            })
-                .then(res => res.json())
-                .then(data => console.log(data))
-        })
-    })
+            let id = b.getAttribute('data-id');
+            if (confirm(`¿Estás seguro de que deseas eliminar la tarea #${id}?`)) {
+                fetch('/tasks/' + id, {
+                    'method': 'DELETE',
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('No se pudo eliminar la tarea');
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    window.showToast(`Tarea #${id} eliminada con éxito`, 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                })
+                .catch(err => {
+                    window.showToast(err.message, 'danger');
+                    console.error(err);
+                });
+            }
+        });
+    });
 </script>
-
 {% endblock %}

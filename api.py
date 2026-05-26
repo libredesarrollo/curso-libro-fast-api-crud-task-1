@@ -8,7 +8,7 @@ from task import task_router
 from fastapi import FastAPI, Depends, APIRouter, Query, Path, Request, Header, HTTPException, status
 from fastapi.security import APIKeyHeader
 from fastapi.templating import Jinja2Templates
-
+from fastapi.staticfiles import StaticFiles
 
 from typing import Optional
 from typing_extensions import Annotated
@@ -22,9 +22,16 @@ templates = Jinja2Templates(directory="templates/")
 # 
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 router = APIRouter()
 
 Base.metadata.create_all(bind=engine)
+
+@app.get('/')
+def home(request: Request):
+    return templates.TemplateResponse(request=request, name='home.html')
+
 
 # middlewares
 # @app.middleware("http")
@@ -123,7 +130,7 @@ def phone(phone: str = Path(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d]
 @app.get('/page')
 def index(request: Request, db: Session = Depends(get_database_session)):
     categories = db.query(Category).all()
-    return templates.TemplateResponse('task/index.html', {"request": request, 'tasks': crud.getAll(db), 'categories': categories})
+    return templates.TemplateResponse(request=request, name='task/index.html', context={'tasks': crud.getAll(db), 'categories': categories})
 
 
 # DEPENDS

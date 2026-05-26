@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from schemes import UserCreate
-from authentication import password, authentication
+from authentication import authentication, password_old
 from database import database, models
 
 user_router = APIRouter()
@@ -29,7 +29,7 @@ def register(user: UserCreate, db:Session = Depends(database.get_database_sessio
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="User email already exist")
     
-    hashed_password = password.get_password_hash(user.password)
+    hashed_password = password_old.get_password_hash(user.password)
     print(hashed_password)
 
     userdb = models.User(name=user.name, 
@@ -37,7 +37,7 @@ def register(user: UserCreate, db:Session = Depends(database.get_database_sessio
                          surname = user.surname, 
                          website= user.website, 
                          hashed_password=hashed_password)
-    
+
     db.add(userdb)
     db.commit()
     db.refresh(userdb)
