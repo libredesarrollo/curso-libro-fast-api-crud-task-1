@@ -43,4 +43,4 @@ https://www.desarrollolibre.net/libros/libro-primeros-pasos-con-fastapi
 
 > **Nota:** Este README es una propuesta basada en el contenido del curso/libro y la estructura del repositorio. Puedes adaptarlo según tus necesidades o añadir secciones como "Instalación", "Uso rápido", o "Contribuciones" si lo consideras necesario.
 
-uvicorn archivo:app --reload
+uvicorn api:app --reload
