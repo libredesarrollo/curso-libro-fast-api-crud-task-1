@@ -18,3 +18,4 @@ SQLAlchemy==2.0.50
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.48.0
+gunicorn
