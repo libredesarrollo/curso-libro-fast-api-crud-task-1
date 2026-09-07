@@ -8,6 +8,7 @@ deepdiff==7.0.1
 dnspython==2.8.0
 email-validator==2.3.0
 fastapi==0.141.1
+gunicorn==26.2.0
 h11==0.16.0
 idna==3.16
 Jinja2==3.1.6
