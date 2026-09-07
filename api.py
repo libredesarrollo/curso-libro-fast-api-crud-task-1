@@ -83,8 +83,8 @@ def page(page: int = Query(1, ge=1, le=20, title='Esta es la pagina que quieres 
     return {"page": page, "size": size}
 
 
-@app.get("/e_phone/")  # +34 111 12-34-56
-def phone(phone: str = Query(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", example="+34 111 12-34-56")):
+# @app.get("/e_phone/")  # +34 111 12-34-56
+# def phone(phone: str = Query(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", example="+34 111 12-34-56")):
 # def phone(phone: Annotated[str, Query(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$", examples={
 #     "example": {
 #         "summary": "A normal example",
@@ -92,6 +92,22 @@ def phone(phone: str = Query(pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d
 #         "value": "+34 111 12-34-56"
 #     }
 # })]):
+@app.get("/e_phone/")
+def phone(
+    phone: Annotated[
+        str,
+        Query(
+            pattern=r"^(\(?\+[\d]{1,3}\)?)\s?([\d]{1,5})\s?([\d][\s\.-]?){6,7}$",
+            openapi_examples={
+                "normal_example": {
+                    "summary": "A normal example",
+                    "description": "A valid phone number format",
+                    "value": "+34 111 12-34-56"
+                }
+            }
+        )
+    ]
+):
     return {"phone": phone}
 
 
